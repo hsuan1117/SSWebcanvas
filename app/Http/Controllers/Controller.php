@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Photo;
+use Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -21,7 +22,9 @@ class Controller extends BaseController
         $path = $file->storePublicly('public');
         Photo::create([
             'token' => $token,
-            'path' => Str::replace('public/', '', $path)
+            'path' => Str::replace('public/', '', $path),
+            'password' =>
+                $request->has('password') ? Hash::make($request->input('password')) : null,
         ]);
         return response()->json([
             'token' => $token,
@@ -31,10 +34,25 @@ class Controller extends BaseController
     public function query(Request $request)
     {
         $request->validate([
-            'token' => 'required|exists:photos,token'
+            'token' => 'required|exists:photos,token',
+            'password' => 'nullable'
         ]);
 
         $photo = Photo::where('token', $request->input('token'))->first();
+
+        if ($photo->password !== null) {
+            if (!$request->has('password')) {
+                return response()->json([
+                    'message' => 'Password required',
+                ], 401);
+            }
+            if (!Hash::check($request->input('password'), $photo->password)) {
+                return response()->json([
+                    'message' => 'Password incorrect',
+                ], 401);
+            }
+        }
+
         return response()->json($photo);
     }
 }

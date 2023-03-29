@@ -15,6 +15,7 @@ return new class extends Migration {
 
             $table->string('path');
             $table->string('token')->nullable();
+            $table->string('password')->nullable();
 
             $table->timestamps();
         });

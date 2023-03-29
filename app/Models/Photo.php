@@ -11,6 +11,11 @@ class Photo extends Model
 
     protected $fillable = [
         'token',
-        'path'
+        'path',
+        'password'
+    ];
+
+    protected $hidden = [
+        'password'
     ];
 }
